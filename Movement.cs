@@ -4,17 +4,23 @@ using UnityEngine;
 
 public class Movement : MonoBehaviour
 {
-    Rigidbody rb;
     [SerializeField] float mainThrust = 1000f;
     [SerializeField] float rotationThrust = 100f;
+    [SerializeField] AudioClip mainEngine;
 
-    // Start is called before the first frame update
+    [SerializeField] ParticleSystem mainThruster;
+    [SerializeField] ParticleSystem leftThruster;
+    [SerializeField] ParticleSystem rightThruster;
+
+    Rigidbody rb;
+    AudioSource audioSource;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        audioSource = GetComponent<AudioSource>();
     }
 
-    // Update is called once per frame
     void Update()
     {
         ProcessThrust();
@@ -25,7 +31,12 @@ public class Movement : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
         {
-            rb.AddRelativeForce(Vector3.up * mainThrust * Time.deltaTime);
+            StartThrusting();
+        }
+        else
+        {
+            audioSource.Stop();
+            mainThruster.Stop();
         }
     }
 
@@ -33,11 +44,44 @@ public class Movement : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
         {
-            ApplyRotation(rotationThrust);
+            RotateLeft();
         }
         else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
         {
-            ApplyRotation(-rotationThrust);
+            RotateRight();
+        }
+        else
+        {
+            leftThruster.Stop();
+            rightThruster.Stop();
+        }
+    }
+
+    void StartThrusting()
+    {
+        rb.AddRelativeForce(Vector3.up * mainThrust * Time.deltaTime);
+        if (!audioSource.isPlaying)
+        {
+            audioSource.PlayOneShot(mainEngine);
+            mainThruster.Play();
+        }
+    }
+
+    void RotateLeft()
+    {
+        ApplyRotation(rotationThrust);
+        if (!leftThruster.isPlaying)
+        {
+            leftThruster.Play();
+        }
+    }
+
+    void RotateRight()
+    {
+        ApplyRotation(-rotationThrust);
+        if (!rightThruster.isPlaying)
+        {
+            rightThruster.Play();
         }
     }
 
